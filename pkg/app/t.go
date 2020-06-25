@@ -1,9 +1,15 @@
 package app
 
-import "fmt"
-
 type TFig struct {
-	a [4]Point
+	a          [4]Point
+	XMax, YMax int
+}
+
+func NewFig(XMax, YMax int) TFig {
+	return TFig{
+		XMax: XMax,
+		YMax: YMax,
+	}
 }
 
 func (r *TFig) get() {
@@ -21,13 +27,35 @@ func (r *TFig) Rotate() {
 	}
 }
 
-func (r TFig) IsLimitExceed(N, M int) bool {
+func (r *TFig) MoveLeft() {
+	b := r.a
 	for i := 0; i < 4; i++ {
-		fmt.Println(r.a[i].x, r.a[i].y)
-		if r.a[i].x < 0 || r.a[i].x >= N || r.a[i].y >= M {
-			return true
+		r.a[i].x--
+		if r.a[i].x < 0 {
+			r.a = b
+			break
 		}
 	}
+}
 
-	return false
+func (r *TFig) MoveRight() {
+	b := r.a
+	for i := 0; i < 4; i++ {
+		r.a[i].x++
+		if r.a[i].x >= r.XMax {
+			r.a = b
+			break
+		}
+	}
+}
+
+func (r *TFig) FallDown() {
+	b := r.a
+	for i := 0; i < 4; i++ {
+		r.a[i].y++
+		if r.a[i].y >= r.YMax {
+			r.a = b
+			break
+		}
+	}
 }

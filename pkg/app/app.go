@@ -33,7 +33,10 @@ type Game struct {
 
 func NewGame() *Game {
 	f := NewField()
-	tf := TFig{}
+	tf := TFig{
+		XMax: f.NumX,
+		YMax: f.NumY,
+	}
 	tf.get()
 	g := &Game{
 		frameNum:   8,
@@ -103,23 +106,6 @@ func (r *Game) DrawSquare(screen *ebiten.Image) {
 	}
 }
 
-func (r *Game) Rotate(screen *ebiten.Image) {
-	var p = Point{}
-	tf := TFig{}
-	tf.get()
-	p = tf.a[1]
-	for _, point := range tf.a {
-		x := point.y - p.y
-		y := point.x - p.x
-		point.x = p.x - x
-		point.y = p.y + y
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(point.x*CubeWidth+r.tx), float64(point.y*CubeWidth+r.ty))
-		err := screen.DrawImage(r.Square.sprite, op)
-		fail.Check(err)
-	}
-}
-
 func (r *Game) listenXMoving() {
 	switch {
 	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
@@ -136,20 +122,16 @@ func (r *Game) listenRotate() {
 }
 
 func (r *Game) MoveRight() {
-	r.tx += CubeWidth
+	r.figure.MoveRight()
 }
 func (r *Game) MoveLeft() {
-	r.tx -= CubeWidth
+	r.figure.MoveLeft()
 }
 func (r *Game) FallDown() {
 	if !r.tick {
 		return
 	}
-	if r.figure.IsLimitExceed(r.field.NumX, r.field.NumY){
-		panic("test")
-		return
-	}
-	r.ty += CubeWidth
+	r.figure.FallDown()
 }
 
 //func (r *Game) Move(screen *ebiten.Image) {
