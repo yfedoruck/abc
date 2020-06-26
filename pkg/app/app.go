@@ -94,10 +94,12 @@ func (r *Game) DrawBg(screen *ebiten.Image) {
 }
 
 func (r *Game) DrawSquare(screen *ebiten.Image) {
-	r.listenXMoving()
-	r.FallDown()
+	if r.figure.NotStopped(){
+		r.listenXMoving()
+		r.FallDown()
+		r.listenRotate()
+	}
 
-	r.listenRotate()
 	for _, point := range r.figure.a {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(point.x*CubeWidth+r.tx), float64(point.y*CubeWidth+r.ty))
