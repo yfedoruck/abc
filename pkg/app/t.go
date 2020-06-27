@@ -1,6 +1,8 @@
 package app
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type TFig struct {
 	a          [4]Point
@@ -15,7 +17,7 @@ func NewFig(XMax, YMax int, num Tetromino) TFig {
 		XMax: XMax,
 		YMax: YMax,
 		Type: num,
-		a: a,
+		a:    a,
 	}
 }
 
@@ -65,16 +67,21 @@ func (r *TFig) MoveRight() {
 	}
 }
 
-func (r *TFig) FallDown() {
+func (r *TFig) FallDown(field Field) {
 	b := r.a
 	for i := 0; i < 4; i++ {
 		r.a[i].y++
-		if r.IsMaxY(i) {
+		if r.IsMaxY(i) || r.IsFilled(field, i) {
 			r.Stop()
 			r.a = b
+			field.Fill(*r)
 			break
 		}
 	}
+}
+
+func (r TFig) IsFilled(field Field, i int) bool {
+	return field.matrix[r.a[i].x][r.a[i].y] == true
 }
 
 func (r *TFig) Stop() {

@@ -166,7 +166,7 @@ func (r *Game) FallDown() {
 	if !r.tick {
 		return
 	}
-	r.figure.FallDown()
+	r.figure.FallDown(r.field)
 }
 
 //func (r *Game) Move(screen *ebiten.Image) {

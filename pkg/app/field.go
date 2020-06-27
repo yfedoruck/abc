@@ -12,7 +12,7 @@ type Field struct {
 	height int
 	NumX   int
 	NumY   int
-	matrix [][]image.Point
+	matrix [][]bool
 }
 
 func NewField() Field {
@@ -36,9 +36,9 @@ func NewField() Field {
 }
 
 func (r *Field) Matrix() {
-	matrix := make([][]image.Point, r.NumX)
+	matrix := make([][]bool, r.NumX)
 	for i := range matrix {
-		matrix[i] = make([]image.Point, r.NumY)
+		matrix[i] = make([]bool, r.NumY)
 	}
 	//matrix := make([][]int, r.NumY)
 	//for i := range matrix {
@@ -47,8 +47,14 @@ func (r *Field) Matrix() {
 	r.matrix = matrix
 	for i := 0; i < r.NumX; i++ {
 		for j := 0; j < r.NumY; j++ {
-			r.matrix[i][j] = image.Pt(i*CubeWidth, j*CubeWidth)
+			r.matrix[i][j] = false
 		}
+	}
+}
+
+func (r *Field) Fill(fig TFig) {
+	for _, point := range fig.a {
+		r.matrix[point.x][point.y] = true
 	}
 }
 
