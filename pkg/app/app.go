@@ -4,6 +4,7 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/inpututil"
 	"github.com/yfedoruck/abc/pkg/fail"
+	"math/rand"
 	"time"
 )
 
@@ -29,15 +30,13 @@ type Game struct {
 	tx         int
 	ty         int
 	figure     TFig
+	wall       []TFig
 }
 
 func NewGame() *Game {
 	f := NewField()
-	tf := TFig{
-		XMax: f.NumX,
-		YMax: f.NumY,
-	}
-	tf.get()
+	fNum := rand.Intn(7) //TODO
+	tf := NewFig(f.NumX, f.NumY, Tetromino(fNum))
 	g := &Game{
 		frameNum:   8,
 		Background: LoadSprite("background.png"),
@@ -48,6 +47,7 @@ func NewGame() *Game {
 		tx:         f.area.Bounds().Min.X,
 		ty:         f.area.Bounds().Min.Y,
 		figure:     tf,
+		wall:       make([]TFig, 0),
 	}
 	g.Fps()
 	return g
@@ -94,18 +94,34 @@ func (r *Game) DrawBg(screen *ebiten.Image) {
 }
 
 func (r *Game) DrawSquare(screen *ebiten.Image) {
-	if r.figure.NotStopped(){
+	if r.figure.NotStopped() {
 		r.listenXMoving()
 		r.FallDown()
 		r.listenRotate()
+	} else {
+		r.wall = append(r.wall, r.figure)
+		r.SetNewFigure()
 	}
 
-	for _, point := range r.figure.a {
+	r.DrawFigure(r.figure, screen)
+
+	for _, figure := range r.wall {
+		r.DrawFigure(figure, screen)
+	}
+}
+
+func (r Game) DrawFigure(figure TFig, screen *ebiten.Image) {
+	for _, point := range figure.a {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(point.x*CubeWidth+r.tx), float64(point.y*CubeWidth+r.ty))
 		err := screen.DrawImage(r.Square.sprite, op)
 		fail.Check(err)
 	}
+}
+
+func (r *Game) SetNewFigure() {
+	fNum := rand.Intn(7)
+	r.figure = NewFig(r.field.NumX, r.field.NumY, Tetromino(fNum))
 }
 
 func (r *Game) listenXMoving() {

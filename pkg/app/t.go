@@ -1,23 +1,29 @@
 package app
 
+import "fmt"
+
 type TFig struct {
 	a          [4]Point
 	XMax, YMax int
-	stopped bool
+	stopped    bool
+	Type       Tetromino
 }
 
-func NewFig(XMax, YMax int) TFig {
+func NewFig(XMax, YMax int, num Tetromino) TFig {
+	a := getFig(num)
 	return TFig{
 		XMax: XMax,
 		YMax: YMax,
+		Type: num,
+		a: a,
 	}
 }
 
-func (r *TFig) get() {
-	r.a = getFig(3)
-}
-
 func (r *TFig) Rotate() {
+	if r.IsNotRotated() {
+		return
+	}
+
 	var p = Point{}
 	p = r.a[1]
 	b := r.a
@@ -31,6 +37,10 @@ func (r *TFig) Rotate() {
 			break
 		}
 	}
+}
+
+func (r TFig) IsNotRotated() bool {
+	return fmt.Sprintf("%s", r.Type) == "O"
 }
 
 func (r *TFig) MoveLeft() {
@@ -67,7 +77,7 @@ func (r *TFig) FallDown() {
 	}
 }
 
-func (r *TFig) Stop()  {
+func (r *TFig) Stop() {
 	r.stopped = true
 }
 
