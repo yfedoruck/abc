@@ -13,7 +13,8 @@ const (
 	ScreenHeight = 1125.0 //960
 	Scale        = 1      //960
 	CubeWidth    = 50
-	Delta        = 0.3
+	Delta        = 600
+	SmallDelta   = 30
 )
 
 type Game struct {
@@ -31,6 +32,7 @@ type Game struct {
 	ty         int
 	figure     TFig
 	wall       []TFig
+	delta      float64
 }
 
 func NewGame() *Game {
@@ -43,11 +45,12 @@ func NewGame() *Game {
 		Square:     NewSquare(), //LoadSprite("R.png"),
 		scale:      Scale,       //0.379,
 		field:      f,
-		last:       float64(time.Now().Second()),
+		last:       tick(),
 		tx:         f.area.Bounds().Min.X,
 		ty:         f.area.Bounds().Min.Y,
 		figure:     tf,
 		wall:       make([]TFig, 0),
+		delta:      Delta,
 	}
 	g.Fps()
 	return g
@@ -74,8 +77,8 @@ func (r *Game) Draw(screen *ebiten.Image) {
 }
 
 func (r *Game) tickTack() {
-	now := float64(time.Now().Second())
-	if now-r.last > Delta {
+	now := tick()
+	if now-r.last > r.delta {
 		if !r.tick {
 			r.tick = true
 		}
@@ -98,7 +101,9 @@ func (r *Game) DrawSquare(screen *ebiten.Image) {
 		r.listenXMoving()
 		r.FallDown()
 		r.listenRotate()
+		r.listenFall()
 	} else {
+		r.ResetDelta()
 		r.wall = append(r.wall, r.figure)
 		r.SetNewFigure()
 	}
@@ -139,6 +144,18 @@ func (r *Game) listenRotate() {
 	}
 }
 
+func (r *Game) listenFall() {
+	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		r.delta = SmallDelta
+	} else {
+		r.ResetDelta()
+	}
+}
+
+func (r *Game) ResetDelta() {
+	r.delta = Delta
+}
+
 func (r *Game) MoveRight() {
 	r.figure.MoveRight()
 }
@@ -166,4 +183,8 @@ func (r *Game) FallDown() {
 
 type Point struct {
 	x, y int
+}
+
+func tick() float64 {
+	return float64(time.Now().UnixNano() / 1e6)
 }
