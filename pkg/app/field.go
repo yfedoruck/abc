@@ -40,10 +40,6 @@ func (r *Field) Matrix() {
 	for i := range matrix {
 		matrix[i] = make([]bool, r.NumY)
 	}
-	//matrix := make([][]int, r.NumY)
-	//for i := range matrix {
-	//	matrix[i] = make([]int, r.NumX)
-	//}
 	r.matrix = matrix
 	for i := 0; i < r.NumX; i++ {
 		for j := 0; j < r.NumY; j++ {
@@ -55,6 +51,26 @@ func (r *Field) Matrix() {
 func (r *Field) Fill(fig TFig) {
 	for _, point := range fig.a {
 		r.matrix[point.x][point.y] = true
+		if r.IsRowFull(point.y) {
+			r.DeleteRow(point.y)
+		}
+	}
+}
+
+func (r *Field) IsRowFull(num int) bool {
+	for i := 0; i < r.NumX; i++ {
+		if r.matrix[i][num] == false {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *Field) DeleteRow(num int) {
+	for j := num; j > 0; j-- {
+		for i := 0; i < r.NumX; i++ {
+			r.matrix[i][j] = r.matrix[i][j-1]
+		}
 	}
 }
 

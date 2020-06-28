@@ -31,7 +31,6 @@ type Game struct {
 	tx         int
 	ty         int
 	figure     TFig
-	wall       []TFig
 	delta      float64
 }
 
@@ -49,7 +48,6 @@ func NewGame() *Game {
 		tx:         f.area.Bounds().Min.X,
 		ty:         f.area.Bounds().Min.Y,
 		figure:     tf,
-		wall:       make([]TFig, 0),
 		delta:      Delta,
 	}
 	g.Fps()
@@ -69,9 +67,10 @@ func (r *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (r *Game) Draw(screen *ebiten.Image) {
-	r.DrawBg(screen)
+	r.screen = screen
+	r.DrawBg()
 	r.tickTack()
-	r.DrawSquare(screen)
+	r.DrawSquare()
 
 	<-r.fps
 }
@@ -88,15 +87,15 @@ func (r *Game) tickTack() {
 	}
 }
 
-func (r *Game) DrawBg(screen *ebiten.Image) {
+func (r *Game) DrawBg() {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(r.scale, r.scale)
 	op.GeoM.Translate(0, 0)
-	err := screen.DrawImage(r.Background, op)
+	err := r.screen.DrawImage(r.Background, op)
 	fail.Check(err)
 }
 
-func (r *Game) DrawSquare(screen *ebiten.Image) {
+func (r *Game) DrawSquare() {
 	if r.figure.NotStopped() {
 		r.listenXMoving()
 		r.FallDown()
@@ -104,22 +103,32 @@ func (r *Game) DrawSquare(screen *ebiten.Image) {
 		r.listenFall()
 	} else {
 		r.ResetDelta()
-		r.wall = append(r.wall, r.figure)
 		r.SetNewFigure()
 	}
 
-	r.DrawFigure(r.figure, screen)
+	r.DrawFigure(r.figure)
 
-	for _, figure := range r.wall {
-		r.DrawFigure(figure, screen)
+	r.DrawWall()
+}
+
+func (r *Game) DrawWall() {
+	for i := 0; i < r.field.NumX; i++ {
+		for j := 0; j < r.field.NumY; j++ {
+			if r.field.matrix[i][j] == true {
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(float64(i*CubeWidth+r.tx), float64(j*CubeWidth+r.ty))
+				err := r.screen.DrawImage(r.Square.sprite, op)
+				fail.Check(err)
+			}
+		}
 	}
 }
 
-func (r Game) DrawFigure(figure TFig, screen *ebiten.Image) {
+func (r Game) DrawFigure(figure TFig) {
 	for _, point := range figure.a {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(point.x*CubeWidth+r.tx), float64(point.y*CubeWidth+r.ty))
-		err := screen.DrawImage(r.Square.sprite, op)
+		err := r.screen.DrawImage(r.Square.sprite, op)
 		fail.Check(err)
 	}
 }
@@ -168,18 +177,6 @@ func (r *Game) FallDown() {
 	}
 	r.figure.FallDown(r.field)
 }
-
-//func (r *Game) Move(screen *ebiten.Image) {
-//	if r.tick == 1 {
-//		r.count++
-//	}
-//
-//	var p image.Point
-//	if r.count < r.field.NumY {
-//		p = r.field.matrix[0][r.count]
-//		r.ty = p.Y + r.field.area.Min.Y
-//	}
-//}
 
 type Point struct {
 	x, y int
