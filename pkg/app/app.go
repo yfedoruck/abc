@@ -37,7 +37,7 @@ type Game struct {
 func NewGame() *Game {
 	f := NewField()
 	fNum := rand.Intn(7) //TODO
-	tf := NewFig(f.NumX, f.NumY, Tetromino(fNum))
+	tf := NewFig(f, Tetromino(fNum))
 	g := &Game{
 		frameNum:   8,
 		Background: LoadSprite("background.png"),
@@ -135,7 +135,7 @@ func (r Game) DrawFigure(figure TFig) {
 
 func (r *Game) SetNewFigure() {
 	fNum := rand.Intn(7)
-	r.figure = NewFig(r.field.NumX, r.field.NumY, Tetromino(fNum))
+	r.figure = NewFig(r.field, Tetromino(fNum))
 }
 
 func (r *Game) listenXMoving() {
