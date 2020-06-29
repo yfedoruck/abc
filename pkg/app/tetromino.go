@@ -1,6 +1,12 @@
 package app
 
+import "fmt"
+
 type Tetromino int
+
+func (r Tetromino) IsI() bool {
+	return fmt.Sprintf("%s", r) == "I"
+}
 
 func (r Tetromino) String() string {
 	res := ""

@@ -31,6 +31,7 @@ type Game struct {
 	tx         int
 	ty         int
 	figure     TFig
+	nextFig    TFig
 	delta      float64
 }
 
@@ -48,6 +49,7 @@ func NewGame() *Game {
 		ty:         f.area.Bounds().Min.Y,
 		figure:     tf,
 		delta:      Delta,
+		nextFig:    NewFig(f, RandomNum()),
 	}
 	g.Fps()
 	return g
@@ -68,6 +70,7 @@ func (r *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func (r *Game) Draw(screen *ebiten.Image) {
 	r.screen = screen
 	r.DrawBg()
+	r.DrawNextFigure()
 	r.tickTack()
 	if r.field.IsGameEnd() {
 		r.Restart()
@@ -137,8 +140,26 @@ func (r Game) DrawFigure(figure TFig) {
 }
 
 func (r *Game) SetNewFigure() {
-	r.figure = NewFig(r.field, RandomNum())
+	r.figure = r.nextFig
+	r.nextFig = NewFig(r.field, RandomNum())
 }
+
+
+func (r Game) DrawNextFigure() {
+	x := r.tx + 545.0
+	y := r.ty + 115.0
+	if r.nextFig.Type.IsI() {
+		x = r.tx + 520.0
+		y = r.ty + 125.0
+	}
+	for _, point := range r.nextFig.a {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(point.x*CubeWidth+x), float64(point.y*CubeWidth+y))
+		err := r.screen.DrawImage(r.Square.sprite, op)
+		fail.Check(err)
+	}
+}
+
 
 func (r *Game) Restart() {
 	r.field.Clear()
@@ -152,9 +173,9 @@ func RandomNum() Tetromino {
 
 func (r *Game) listenXMoving() {
 	switch {
-	case inpututil.IsKeyJustPressed(ebiten.KeyRight):
+	case ebiten.IsKeyPressed(ebiten.KeyRight):
 		r.MoveRight()
-	case inpututil.IsKeyJustPressed(ebiten.KeyLeft):
+	case ebiten.IsKeyPressed(ebiten.KeyLeft):
 		r.MoveLeft()
 	}
 }
