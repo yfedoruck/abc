@@ -36,8 +36,7 @@ type Game struct {
 
 func NewGame() *Game {
 	f := NewField()
-	fNum := rand.Intn(7) //TODO
-	tf := NewFig(f, Tetromino(fNum))
+	tf := NewFig(f, RandomNum())
 	g := &Game{
 		frameNum:   8,
 		Background: LoadSprite("background.png"),
@@ -70,6 +69,10 @@ func (r *Game) Draw(screen *ebiten.Image) {
 	r.screen = screen
 	r.DrawBg()
 	r.tickTack()
+	if r.field.IsGameEnd() {
+		r.Restart()
+		return
+	}
 	r.DrawSquare()
 
 	<-r.fps
@@ -134,8 +137,17 @@ func (r Game) DrawFigure(figure TFig) {
 }
 
 func (r *Game) SetNewFigure() {
-	fNum := rand.Intn(7)
-	r.figure = NewFig(r.field, Tetromino(fNum))
+	r.figure = NewFig(r.field, RandomNum())
+}
+
+func (r *Game) Restart() {
+	r.field.Clear()
+	r.SetNewFigure()
+}
+
+func RandomNum() Tetromino {
+	generator := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return Tetromino(generator.Intn(7))
 }
 
 func (r *Game) listenXMoving() {

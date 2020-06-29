@@ -41,11 +41,6 @@ func (r *Field) Matrix() {
 		matrix[i] = make([]bool, r.NumY)
 	}
 	r.matrix = matrix
-	for i := 0; i < r.NumX; i++ {
-		for j := 0; j < r.NumY; j++ {
-			r.matrix[i][j] = false
-		}
-	}
 }
 
 func (r *Field) Fill(fig TFig) {
@@ -70,6 +65,23 @@ func (r *Field) DeleteRow(num int) {
 	for j := num; j > 0; j-- {
 		for i := 0; i < r.NumX; i++ {
 			r.matrix[i][j] = r.matrix[i][j-1]
+		}
+	}
+}
+
+func (r *Field) IsGameEnd() bool {
+	for i := 0; i < r.NumX; i++ {
+		if r.matrix[i][0] == true {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Field) Clear() {
+	for i := 0; i < r.NumX; i++ {
+		for j := 0; j < r.NumY; j++ {
+			r.matrix[i][j] = false
 		}
 	}
 }
