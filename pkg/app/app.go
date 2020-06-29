@@ -15,6 +15,7 @@ const (
 	CubeWidth    = 50
 	Delta        = 600
 	SmallDelta   = 30
+	SideDelta    = 100
 )
 
 type Game struct {
@@ -88,8 +89,16 @@ func (r *Game) tickTack() {
 			r.tick = true
 		}
 		r.last = now
-	} else {
+	} else if r.tick {
 		r.tick = false
+	}
+}
+
+func (r *Game) tact(fn func(), delta float64) {
+	now := tick()
+	if now-r.last > delta {
+		fn()
+		r.last = now
 	}
 }
 
@@ -103,10 +112,10 @@ func (r *Game) DrawBg() {
 
 func (r *Game) DrawSquare() {
 	if r.figure.NotStopped() {
-		r.listenXMoving()
+		r.listenMoving()
 		r.FallDown()
-		r.listenRotate()
-		r.listenFall()
+		//r.listenRotate()
+		//r.listenFall()
 	} else {
 		r.ResetDelta()
 		r.SetNewFigure()
@@ -144,7 +153,6 @@ func (r *Game) SetNewFigure() {
 	r.nextFig = NewFig(r.field, RandomNum())
 }
 
-
 func (r Game) DrawNextFigure() {
 	x := r.tx + 545.0
 	y := r.ty + 115.0
@@ -160,7 +168,6 @@ func (r Game) DrawNextFigure() {
 	}
 }
 
-
 func (r *Game) Restart() {
 	r.field.Clear()
 	r.SetNewFigure()
@@ -171,12 +178,18 @@ func RandomNum() Tetromino {
 	return Tetromino(generator.Intn(7))
 }
 
-func (r *Game) listenXMoving() {
+func (r *Game) listenMoving() {
 	switch {
 	case ebiten.IsKeyPressed(ebiten.KeyRight):
-		r.MoveRight()
+		r.tact(r.figure.MoveRight, SideDelta)
 	case ebiten.IsKeyPressed(ebiten.KeyLeft):
-		r.MoveLeft()
+		r.tact(r.figure.MoveLeft, SideDelta)
+	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
+		r.figure.Rotate()
+	case ebiten.IsKeyPressed(ebiten.KeyDown):
+		r.delta = SmallDelta
+	default:
+		r.ResetDelta()
 	}
 }
 
