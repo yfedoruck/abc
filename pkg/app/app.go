@@ -114,10 +114,8 @@ func (r *Game) DrawSquare() {
 	if r.figure.NotStopped() {
 		r.listenMoving()
 		r.FallDown()
-		//r.listenRotate()
-		//r.listenFall()
 	} else {
-		r.ResetDelta()
+		r.SetDelta(Delta)
 		r.SetNewFigure()
 	}
 
@@ -130,10 +128,7 @@ func (r *Game) DrawWall() {
 	for i := 0; i < r.field.NumX; i++ {
 		for j := 0; j < r.field.NumY; j++ {
 			if r.field.matrix[i][j] == true {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(i*CubeWidth+r.tx), float64(j*CubeWidth+r.ty))
-				err := r.screen.DrawImage(r.Square.sprite, op)
-				fail.Check(err)
+				r.DrawPoint(i, j)
 			}
 		}
 	}
@@ -141,11 +136,15 @@ func (r *Game) DrawWall() {
 
 func (r Game) DrawFigure(figure TFig) {
 	for _, point := range figure.a {
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(point.x*CubeWidth+r.tx), float64(point.y*CubeWidth+r.ty))
-		err := r.screen.DrawImage(r.Square.sprite, op)
-		fail.Check(err)
+		r.DrawPoint(point.x, point.y)
 	}
+}
+
+func (r Game) DrawPoint(x, y int) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(x*CubeWidth+r.tx), float64(y*CubeWidth+r.ty))
+	err := r.screen.DrawImage(r.Square.sprite, op)
+	fail.Check(err)
 }
 
 func (r *Game) SetNewFigure() {
@@ -187,36 +186,18 @@ func (r *Game) listenMoving() {
 	case inpututil.IsKeyJustPressed(ebiten.KeyUp):
 		r.figure.Rotate()
 	case ebiten.IsKeyPressed(ebiten.KeyDown):
-		r.delta = SmallDelta
-	default:
-		r.ResetDelta()
+		r.SetDelta(SmallDelta)
+	case inpututil.IsKeyJustReleased(ebiten.KeyDown):
+		r.SetDelta(Delta)
 	}
 }
 
-func (r *Game) listenRotate() {
-	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		r.figure.Rotate()
+func (r *Game) SetDelta(delta float64) {
+	if r.delta != delta {
+		r.delta = delta
 	}
 }
 
-func (r *Game) listenFall() {
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		r.delta = SmallDelta
-	} else {
-		r.ResetDelta()
-	}
-}
-
-func (r *Game) ResetDelta() {
-	r.delta = Delta
-}
-
-func (r *Game) MoveRight() {
-	r.figure.MoveRight()
-}
-func (r *Game) MoveLeft() {
-	r.figure.MoveLeft()
-}
 func (r *Game) FallDown() {
 	if !r.tick {
 		return
