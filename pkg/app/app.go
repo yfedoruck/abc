@@ -45,6 +45,9 @@ type Game struct {
 func NewGame() *Game {
 	f := NewField()
 	tf := NewFig(f, RandomNum())
+	err := tf.StartPosition()
+	fail.Check(err)
+
 	g := &Game{
 		frameNum:   8,
 		Background: LoadSprite("background.png"),
@@ -79,16 +82,22 @@ func (r *Game) Draw(screen *ebiten.Image) {
 	r.screen = screen
 	r.DrawBg()
 	r.tickTack()
-	if r.field.FilledToTop() {
+
+	if r.isEnd {
+		r.GameOver()
+		return
+	} else if r.field.FilledToTop() {
 		r.EndGame()
 		return
 	}
-	if r.isEnd {
-		r.GameOver()
-	} else {
-		r.DrawNextFigure()
-		r.DrawSquare()
-	}
+
+	r.DrawNextFigure()
+	r.listenMoving()
+	r.FallDown()
+
+	r.DrawScores()
+	r.DrawFigure()
+	r.DrawWall()
 
 	<-r.fps
 }
@@ -121,21 +130,6 @@ func (r *Game) DrawBg() {
 	fail.Check(err)
 }
 
-func (r *Game) DrawSquare() {
-	if r.figure.NotStopped() {
-		r.listenMoving()
-		r.FallDown()
-	} else {
-		r.SetDelta(Delta)
-		r.SetNewFigure()
-	}
-	text.Draw(r.screen, fmt.Sprintf("%d", r.field.cntDel), r.font, r.tx+r.field.width+130, r.ty+35, color.White)
-
-	r.DrawFigure(r.figure)
-
-	r.DrawWall()
-}
-
 func (r *Game) DrawWall() {
 	for i := 0; i < r.field.NumX; i++ {
 		for j := 0; j < r.field.NumY; j++ {
@@ -146,13 +140,17 @@ func (r *Game) DrawWall() {
 	}
 }
 
-func (r Game) DrawFigure(figure TFig) {
-	for _, point := range figure.a {
+func (r *Game) DrawFigure() {
+	for _, point := range r.figure.a {
 		r.DrawPoint(point.x, point.y)
 	}
 }
 
-func (r Game) DrawPoint(x, y int) {
+func (r *Game) DrawScores() {
+	text.Draw(r.screen, fmt.Sprintf("%d", r.field.cntDel), r.font, r.tx+r.field.width+130, r.ty+35, color.White)
+}
+
+func (r *Game) DrawPoint(x, y int) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(x*CubeWidth+r.tx), float64(y*CubeWidth+r.ty))
 	err := r.screen.DrawImage(r.Square.sprite, op)
@@ -161,10 +159,14 @@ func (r Game) DrawPoint(x, y int) {
 
 func (r *Game) SetNewFigure() {
 	r.figure = r.nextFig
+	if err := r.figure.StartPosition(); err != nil {
+		r.EndGame()
+		return
+	}
 	r.nextFig = NewFig(r.field, RandomNum())
 }
 
-func (r Game) DrawNextFigure() {
+func (r *Game) DrawNextFigure() {
 	x := r.tx + 545.0
 	y := r.ty + 115.0
 	if r.nextFig.Type.IsI() {
@@ -179,17 +181,12 @@ func (r Game) DrawNextFigure() {
 	}
 }
 
-func (r *Game) Restart() {
-	r.field.Clear()
-	r.SetNewFigure()
-}
-
 func (r *Game) EndGame() {
 	r.isEnd = true
-	r.field.Clear()
 }
 
 func (r *Game) GameOver() {
+	r.field.Clear()
 	r.DrawResults()
 	if r.startEvent() {
 		r.StartGame()
@@ -210,6 +207,7 @@ func (r Game) startEvent() bool {
 func (r *Game) StartGame() {
 	r.isEnd = false
 	r.field.cntDel = 0
+	r.SetNewFigure()
 }
 
 func RandomNum() Tetromino {
@@ -239,10 +237,15 @@ func (r *Game) SetDelta(delta float64) {
 }
 
 func (r *Game) FallDown() {
-	if !r.tick {
+	if r.figure.IsStopped() {
+		r.SetDelta(Delta)
+		r.SetNewFigure()
 		return
 	}
-	r.figure.FallDown(&r.field)
+
+	if r.tick {
+		r.figure.FallDown(&r.field)
+	}
 }
 
 type Point struct {

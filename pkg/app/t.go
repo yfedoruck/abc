@@ -55,6 +55,19 @@ func (r *TFig) MoveLeft() {
 	}
 }
 
+func (r *TFig) StartPosition() error {
+	x := 4
+	y := 0
+	for i := 0; i < 4; i++ {
+		r.a[i].x += x
+		r.a[i].y += y
+		if r.IsFilled(i) {
+			return new(FilledPosition)
+		}
+	}
+	return nil
+}
+
 func (r *TFig) MoveRight() {
 	b := r.a
 	for i := 0; i < 4; i++ {
@@ -109,4 +122,10 @@ func (r TFig) IsMaxY(i int) bool {
 
 func (r TFig) IsLimitExceed(i int) bool {
 	return r.IsMinX(i) || r.IsMaxX(i) || r.IsMaxY(i) || r.IsFilled(i)
+}
+
+type FilledPosition bool
+
+func (r FilledPosition) Error() string {
+	return "position is filled"
 }
