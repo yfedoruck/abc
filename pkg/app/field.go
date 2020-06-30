@@ -13,6 +13,7 @@ type Field struct {
 	NumX   int
 	NumY   int
 	matrix [][]bool
+	cntDel int
 }
 
 func NewField() Field {
@@ -48,6 +49,7 @@ func (r *Field) Fill(fig TFig) {
 		r.matrix[point.x][point.y] = true
 		if r.IsRowFull(point.y) {
 			r.DeleteRow(point.y)
+			r.cntDel++
 		}
 	}
 }
@@ -69,7 +71,7 @@ func (r *Field) DeleteRow(num int) {
 	}
 }
 
-func (r *Field) IsGameEnd() bool {
+func (r *Field) FilledToTop() bool {
 	for i := 0; i < r.NumX; i++ {
 		if r.matrix[i][0] == true {
 			return true

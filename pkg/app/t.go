@@ -66,7 +66,7 @@ func (r *TFig) MoveRight() {
 	}
 }
 
-func (r *TFig) FallDown(field Field) {
+func (r *TFig) FallDown(field *Field) {
 	b := r.a
 	for i := 0; i < 4; i++ {
 		r.a[i].y++

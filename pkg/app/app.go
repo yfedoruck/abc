@@ -1,9 +1,13 @@
 package app
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/text"
 	"github.com/yfedoruck/abc/pkg/fail"
+	"golang.org/x/image/font"
+	"image/color"
 	"math/rand"
 	"time"
 )
@@ -34,6 +38,8 @@ type Game struct {
 	figure     TFig
 	nextFig    TFig
 	delta      float64
+	font       font.Face
+	isEnd      bool
 }
 
 func NewGame() *Game {
@@ -51,6 +57,7 @@ func NewGame() *Game {
 		figure:     tf,
 		delta:      Delta,
 		nextFig:    NewFig(f, RandomNum()),
+		font:       FontFace(),
 	}
 	g.Fps()
 	return g
@@ -71,13 +78,17 @@ func (r *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func (r *Game) Draw(screen *ebiten.Image) {
 	r.screen = screen
 	r.DrawBg()
-	r.DrawNextFigure()
 	r.tickTack()
-	if r.field.IsGameEnd() {
-		r.Restart()
+	if r.field.FilledToTop() {
+		r.EndGame()
 		return
 	}
-	r.DrawSquare()
+	if r.isEnd {
+		r.GameOver()
+	} else {
+		r.DrawNextFigure()
+		r.DrawSquare()
+	}
 
 	<-r.fps
 }
@@ -118,6 +129,7 @@ func (r *Game) DrawSquare() {
 		r.SetDelta(Delta)
 		r.SetNewFigure()
 	}
+	text.Draw(r.screen, fmt.Sprintf("%d", r.field.cntDel), r.font, r.tx+r.field.width+130, r.ty+35, color.White)
 
 	r.DrawFigure(r.figure)
 
@@ -172,6 +184,18 @@ func (r *Game) Restart() {
 	r.SetNewFigure()
 }
 
+func (r *Game) EndGame() {
+	r.isEnd = true
+	r.field.Clear()
+}
+
+func (r *Game) GameOver() {
+	text.Draw(r.screen, fmt.Sprintf("%d", r.field.cntDel), r.font, r.tx+r.field.width+130, r.ty+35, color.White)
+	text.Draw(r.screen, fmt.Sprintf(
+		"Your score: %d\n\nTo start new game\npress Enter",
+		r.field.cntDel), r.font, r.tx+r.field.width/3, r.ty+r.field.width/4, color.White)
+}
+
 func RandomNum() Tetromino {
 	generator := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return Tetromino(generator.Intn(7))
@@ -202,7 +226,7 @@ func (r *Game) FallDown() {
 	if !r.tick {
 		return
 	}
-	r.figure.FallDown(r.field)
+	r.figure.FallDown(&r.field)
 }
 
 type Point struct {
