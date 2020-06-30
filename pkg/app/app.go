@@ -190,10 +190,26 @@ func (r *Game) EndGame() {
 }
 
 func (r *Game) GameOver() {
+	r.DrawResults()
+	if r.startEvent() {
+		r.StartGame()
+	}
+}
+
+func (r *Game) DrawResults() {
 	text.Draw(r.screen, fmt.Sprintf("%d", r.field.cntDel), r.font, r.tx+r.field.width+130, r.ty+35, color.White)
 	text.Draw(r.screen, fmt.Sprintf(
 		"Your score: %d\n\nTo start new game\npress Enter",
 		r.field.cntDel), r.font, r.tx+r.field.width/3, r.ty+r.field.width/4, color.White)
+}
+
+func (r Game) startEvent() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyEnter) || ebiten.IsKeyPressed(ebiten.KeyKPEnter)
+}
+
+func (r *Game) StartGame() {
+	r.isEnd = false
+	r.field.cntDel = 0
 }
 
 func RandomNum() Tetromino {
