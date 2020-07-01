@@ -40,6 +40,7 @@ type Game struct {
 	delta      float64
 	font       font.Face
 	isEnd      bool
+	isBegin    bool
 }
 
 func NewGame() *Game {
@@ -61,6 +62,7 @@ func NewGame() *Game {
 		delta:      Delta,
 		nextFig:    NewFig(f, RandomNum()),
 		font:       FontFace(),
+		isBegin:    true,
 	}
 	g.Fps()
 	return g
@@ -83,7 +85,10 @@ func (r *Game) Draw(screen *ebiten.Image) {
 	r.DrawBg()
 	r.tickTack()
 
-	if r.isEnd {
+	if r.isBegin {
+		r.StartScreen()
+		return
+	} else if r.isEnd {
 		r.GameOver()
 		return
 	} else if r.field.FilledToTop() {
@@ -193,6 +198,20 @@ func (r *Game) GameOver() {
 	}
 }
 
+func (r *Game) StartScreen() {
+	r.StartNote()
+	if r.startEvent() {
+		r.StartGame()
+	}
+}
+
+func (r *Game) StartNote() {
+	text.Draw(r.screen, fmt.Sprintf("%s", "-"), r.font, r.tx+r.field.width+135, r.ty+37, color.White)
+	text.Draw(r.screen, fmt.Sprintf(
+		"To start game\npress Enter",
+	), r.font, r.tx+r.field.width/3, r.ty+r.field.width/4, color.White)
+}
+
 func (r *Game) DrawResults() {
 	text.Draw(r.screen, fmt.Sprintf("%d", r.field.cntDel), r.font, r.tx+r.field.width+130, r.ty+35, color.White)
 	text.Draw(r.screen, fmt.Sprintf(
@@ -205,6 +224,7 @@ func (r Game) startEvent() bool {
 }
 
 func (r *Game) StartGame() {
+	r.isBegin = false
 	r.isEnd = false
 	r.field.cntDel = 0
 	r.SetNewFigure()
