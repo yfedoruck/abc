@@ -3,8 +3,8 @@ package app
 import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/yfedoruck/abc/pkg/env"
-	"github.com/yfedoruck/abc/pkg/fail"
+	"github.com/yfedoruck/tetris/pkg/env"
+	"github.com/yfedoruck/tetris/pkg/fail"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"

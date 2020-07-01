@@ -5,7 +5,7 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/inpututil"
 	"github.com/hajimehoshi/ebiten/text"
-	"github.com/yfedoruck/abc/pkg/fail"
+	"github.com/yfedoruck/tetris/pkg/fail"
 	"golang.org/x/image/font"
 	"image/color"
 	"math/rand"

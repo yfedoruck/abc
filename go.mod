@@ -1,4 +1,4 @@
-module github.com/yfedoruck/abc
+module github.com/yfedoruck/tetris
 
 go 1.13
 

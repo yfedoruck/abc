@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/golang/freetype/truetype"
-	"github.com/yfedoruck/abc/pkg/resources/fonts"
+	"github.com/yfedoruck/tetris/pkg/resources/fonts"
 	"golang.org/x/image/font"
 	"log"
 )

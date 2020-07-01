@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten"
-	"github.com/yfedoruck/abc/pkg/app"
+	"github.com/yfedoruck/tetris/pkg/app"
 	_ "image/jpeg"
 	"log"
 )
